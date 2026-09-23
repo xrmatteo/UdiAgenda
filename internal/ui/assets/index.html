@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UdiAgenda</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="styles.css"><!--INLINE-CSS-->
+</head>
+<body>
+<div id="app">
+  <header id="head">
+    <div class="head-text">
+      <h1 id="head-title">AGENDA COMPITI</h1>
+      <p id="subtitle">—</p>
+    </div>
+    <div class="head-actions">
+      <button id="btn-settings" class="icon-btn" title="Impostazioni" aria-label="Impostazioni">
+        <svg class="stroke" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 8h8.2M16.6 8h3.9M3.5 16h3.9M12.3 16h8.2"/><circle cx="14.2" cy="8" r="2.4"/><circle cx="9.8" cy="16" r="2.4"/></svg>
+      </button>
+      <button id="btn-close" class="icon-btn" title="Chiudi pannello (Esc)" aria-label="Chiudi pannello">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6.2 5.1 5.1 6.2 8.9 10l-3.8 3.8 1.1 1.1L10 11.1l3.8 3.8 1.1-1.1L11.1 10l3.8-3.8-1.1-1.1L10 8.9 6.2 5.1Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <nav id="tabs" class="tabs">
+    <button type="button" class="tab on" data-sec="compiti">Compiti<span class="tab-n" id="n-compiti"></span></button>
+    <button type="button" class="tab" data-sec="verifiche">Verifiche<span class="tab-n" id="n-verifiche"></span></button>
+    <button type="button" class="tab" data-sec="materie">Materie<span class="tab-n" id="n-materie"></span></button>
+  </nav>
+
+  <main id="list" tabindex="-1"></main>
+
+  <footer id="foot">
+    <button id="btn-add" class="add-btn">
+      <span class="plus">+</span><span id="add-label">Nuova attività</span>
+    </button>
+  </footer>
+
+  <!-- Scheda: nuova attività / modifica -->
+  <section id="sheet-task" class="sheet" hidden aria-hidden="true">
+    <div class="sheet-head">
+      <h2 id="sheet-task-title">Nuova attività</h2>
+      <button class="icon-btn js-close-sheet" title="Annulla" aria-label="Annulla">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6.2 5.1 5.1 6.2 8.9 10l-3.8 3.8 1.1 1.1L10 11.1l3.8 3.8 1.1-1.1L11.1 10l3.8-3.8-1.1-1.1L10 8.9 6.2 5.1Z"/></svg>
+      </button>
+    </div>
+    <form id="form-task" class="sheet-body" autocomplete="off" novalidate>
+      <div class="field">
+        <span class="label">Sezione</span>
+        <div class="seg" id="f-kind">
+          <button type="button" data-v="compito">Compito</button>
+          <button type="button" data-v="verifica">Verifica</button>
+        </div>
+      </div>
+      <label class="field">
+        <span class="label">Nome <em>obbligatorio</em></span>
+        <input id="f-title" type="text" maxlength="200" placeholder="Es. Compito matematica" required>
+      </label>
+
+      <div class="field">
+        <span class="label">Scadenza <em>obbligatoria</em></span>
+        <div class="chips" id="date-chips">
+          <button type="button" class="chip" data-days="0">Oggi</button>
+          <button type="button" class="chip" data-days="1">Domani</button>
+          <button type="button" class="chip" data-days="2">Dopodomani</button>
+          <button type="button" class="chip" data-days="7">Fra 1 settimana</button>
+        </div>
+        <input id="f-date" type="date" required>
+      </div>
+
+      <button type="button" id="btn-more" class="more-btn" aria-expanded="false">
+        <span class="caret">›</span> Dettagli facoltativi
+      </button>
+      <div id="more" class="more" hidden>
+        <div class="row">
+          <label class="field">
+            <span class="label">Ora</span>
+            <input id="f-time" type="time">
+          </label>
+          <label class="field">
+            <span class="label">Categoria</span>
+            <input id="f-category" type="text" maxlength="60" list="categories" placeholder="Es. Matematica">
+            <datalist id="categories"></datalist>
+          </label>
+        </div>
+        <label class="field">
+          <span class="label">Nota</span>
+          <textarea id="f-note" rows="2" maxlength="2000" placeholder="Facoltativa"></textarea>
+        </label>
+      </div>
+
+      <p id="form-error" class="error" hidden></p>
+
+      <div class="sheet-actions">
+        <button type="button" class="btn ghost js-close-sheet">Annulla</button>
+        <button type="submit" class="btn primary" id="btn-save">Salva</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Scheda: impostazioni -->
+  <section id="sheet-settings" class="sheet" hidden aria-hidden="true">
+    <div class="sheet-head">
+      <h2>Impostazioni</h2>
+      <button class="icon-btn js-close-sheet" title="Chiudi" aria-label="Chiudi">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6.2 5.1 5.1 6.2 8.9 10l-3.8 3.8 1.1 1.1L10 11.1l3.8 3.8 1.1-1.1L11.1 10l3.8-3.8-1.1-1.1L10 8.9 6.2 5.1Z"/></svg>
+      </button>
+    </div>
+    <div class="sheet-body">
+      <div class="opt">
+        <div class="opt-text"><b>Avvio automatico con Windows</b><span>L'app parte da sola e resta come linguetta.</span></div>
+        <label class="switch"><input type="checkbox" id="s-autostart"><span></span></label>
+      </div>
+      <div class="opt">
+        <div class="opt-text"><b>Mostra attività completate</b><span>Aggiunge la sezione "Completati".</span></div>
+        <label class="switch"><input type="checkbox" id="s-completed"><span></span></label>
+      </div>
+      <div class="opt">
+        <div class="opt-text"><b>Nascondi la linguetta</b><span>Sparisce quando il mouse è lontano o fermo; riappare avvicinandolo al bordo.</span></div>
+        <label class="switch"><input type="checkbox" id="s-hidetab"><span></span></label>
+      </div>
+      <div class="opt column">
+        <div class="opt-text"><b>Tema</b></div>
+        <div class="seg" id="s-theme">
+          <button type="button" data-v="auto">Automatico</button>
+          <button type="button" data-v="light">Chiaro</button>
+          <button type="button" data-v="dark">Scuro</button>
+        </div>
+      </div>
+      <div class="opt column">
+        <div class="opt-text"><b>Colore</b> <span id="s-accent-name">Blu</span></div>
+        <div class="swatches" id="s-accent">
+          <button type="button" class="sw-blue" data-v="blue" title="Blu" aria-label="Blu"></button>
+          <button type="button" class="sw-teal" data-v="teal" title="Turchese" aria-label="Turchese"></button>
+          <button type="button" class="sw-green" data-v="green" title="Verde" aria-label="Verde"></button>
+          <button type="button" class="sw-purple" data-v="purple" title="Viola" aria-label="Viola"></button>
+          <button type="button" class="sw-pink" data-v="pink" title="Rosa" aria-label="Rosa"></button>
+          <button type="button" class="sw-orange" data-v="orange" title="Arancio" aria-label="Arancio"></button>
+          <button type="button" class="sw-red" data-v="red" title="Rosso" aria-label="Rosso"></button>
+          <button type="button" class="sw-graphite" data-v="graphite" title="Grafite" aria-label="Grafite"></button>
+        </div>
+      </div>
+      <div class="opt column">
+        <div class="opt-text"><b>Lato della linguetta</b></div>
+        <div class="seg" id="s-side">
+          <button type="button" data-v="right">Destra</button>
+          <button type="button" data-v="left">Sinistra</button>
+        </div>
+      </div>
+      <div class="opt column">
+        <div class="opt-text"><b>Altezza della linguetta</b></div>
+        <div class="seg" id="s-pos">
+          <button type="button" data-v="top">Alto</button>
+          <button type="button" data-v="center">Centro</button>
+          <button type="button" data-v="bottom">Basso</button>
+        </div>
+      </div>
+      <div class="opt column">
+        <div class="opt-text"><b>Larghezza pannello</b> <span id="s-width-val">400 px</span></div>
+        <input type="range" id="s-width" min="340" max="520" step="10">
+      </div>
+      <div class="sheet-actions spread">
+        <button type="button" class="btn danger-ghost" id="btn-clear-done">Svuota completati</button>
+        <button type="button" class="btn ghost" id="btn-quit">Esci dall'app</button>
+      </div>
+      <p class="hint" id="about">—</p>
+    </div>
+  </section>
+
+  <!-- Scheda: nuovo voto / modifica voto -->
+  <section id="sheet-grade" class="sheet" hidden aria-hidden="true">
+    <div class="sheet-head">
+      <h2 id="sheet-grade-title">Nuovo voto</h2>
+      <button class="icon-btn js-close-sheet" title="Annulla" aria-label="Annulla">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6.2 5.1 5.1 6.2 8.9 10l-3.8 3.8 1.1 1.1L10 11.1l3.8 3.8 1.1-1.1L11.1 10l3.8-3.8-1.1-1.1L10 8.9 6.2 5.1Z"/></svg>
+      </button>
+    </div>
+    <form id="form-grade" class="sheet-body" autocomplete="off" novalidate>
+      <label class="field">
+        <span class="label">Materia <em>obbligatoria</em></span>
+        <input id="g-subject" type="text" maxlength="60" list="subjects" placeholder="Es. Matematica" required>
+        <datalist id="subjects"></datalist>
+      </label>
+
+      <div class="field">
+        <span class="label">Voto <em>obbligatorio, da 1 a 6</em></span>
+        <div class="chips" id="grade-chips">
+          <button type="button" class="gchip" data-v="3">3</button>
+          <button type="button" class="gchip" data-v="3.5">3.5</button>
+          <button type="button" class="gchip" data-v="4">4</button>
+          <button type="button" class="gchip" data-v="4.5">4.5</button>
+          <button type="button" class="gchip" data-v="5">5</button>
+          <button type="button" class="gchip" data-v="5.5">5.5</button>
+          <button type="button" class="gchip" data-v="6">6</button>
+        </div>
+        <input id="g-value" type="text" inputmode="decimal" maxlength="5" placeholder="oppure scrivilo: 4.7">
+      </div>
+
+      <div class="row">
+        <label class="field">
+          <span class="label">Data</span>
+          <input id="g-date" type="date">
+        </label>
+        <div class="field">
+          <span class="label">Tipo</span>
+          <div class="seg" id="g-type">
+            <button type="button" data-v="">—</button>
+            <button type="button" data-v="scritto">Scritto</button>
+            <button type="button" data-v="orale">Orale</button>
+            <button type="button" data-v="pratico">Pratico</button>
+          </div>
+        </div>
+      </div>
+
+      <label class="field">
+        <span class="label">Nota</span>
+        <input id="g-note" type="text" maxlength="500" placeholder="Facoltativa (es. verifica equazioni)">
+      </label>
+
+      <p id="grade-error" class="error" hidden></p>
+
+      <div class="sheet-actions">
+        <button type="button" class="btn ghost js-close-sheet">Annulla</button>
+        <button type="submit" class="btn primary" id="btn-save-grade">Salva</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Scheda: rinomina materia -->
+  <section id="sheet-subject" class="sheet" hidden aria-hidden="true">
+    <div class="sheet-head">
+      <h2>Materia</h2>
+      <button class="icon-btn js-close-sheet" title="Annulla" aria-label="Annulla">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6.2 5.1 5.1 6.2 8.9 10l-3.8 3.8 1.1 1.1L10 11.1l3.8 3.8 1.1-1.1L11.1 10l3.8-3.8-1.1-1.1L10 8.9 6.2 5.1Z"/></svg>
+      </button>
+    </div>
+    <form id="form-subject" class="sheet-body" autocomplete="off" novalidate>
+      <label class="field">
+        <span class="label">Nome della materia</span>
+        <input id="m-name" type="text" maxlength="60" required>
+      </label>
+      <label class="field">
+        <span class="label">Docente <em>facoltativo</em></span>
+        <input id="m-teacher" type="text" maxlength="60" placeholder="Es. Renata Foglia">
+      </label>
+      <p id="subject-error" class="error" hidden></p>
+      <div class="sheet-actions spread">
+        <button type="button" class="btn danger-ghost" id="btn-del-subject">Elimina materia e voti</button>
+        <button type="submit" class="btn primary">Salva</button>
+      </div>
+    </form>
+  </section>
+
+  <div id="toast" class="toast" hidden></div>
+</div>
+<script src="app.js"></script><!--INLINE-JS-->
+</body>
+</html>
